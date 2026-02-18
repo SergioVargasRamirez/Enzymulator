@@ -64,6 +64,11 @@ for tab, label in zip(tabs, tab_labels):
 
         sim = st.session_state[sim_key]
 
+        # ---------------------------------------------------
+        # Controls (ONLY called once!)
+        # ---------------------------------------------------
+        config = tab_controls(label)
+
         # Layout columns
         col_sim, col_right = st.columns([2, 1])
 
@@ -73,11 +78,6 @@ for tab, label in zip(tabs, tab_labels):
         with col_right:
             plot_placeholder = st.empty()
             table_placeholder = st.empty()
-
-        # ---------------------------------------------------
-        # Controls (ONLY called once!)
-        # ---------------------------------------------------
-        config = tab_controls(label)
 
         # ---------------------------------------------------
         # Handle Clean (clears screen only)
@@ -170,13 +170,13 @@ for tab, label in zip(tabs, tab_labels):
                 sim_placeholder.pyplot(fig_sim)
 
                 # Product plot + stats table
-                fig_plot, df_stats = render_plot_and_table(sim, fig=st.session_state[f"fig_plot_{label}"])
+                fig_plot, df_stats, df_progress = render_plot_and_table(sim, fig=st.session_state[f"fig_plot_{label}"])
                 plot_placeholder.pyplot(fig_plot)
                 table_placeholder.markdown(
                     render_html_table(df_stats, font_size=18),
                     unsafe_allow_html=True
                 )
-
+                
                 # Plateau stop rule
                 if len(sim.history_product_sampled) >= plateau_intervals + 1:
                     recent_samples = sim.history_product_sampled[-(plateau_intervals + 1):]
@@ -189,5 +189,12 @@ for tab, label in zip(tabs, tab_labels):
                 if len(sim.substrates) == 0:
                     running = False
                     st.success("Simulation finished: all substrates consumed.")
+            
+            st.subheader("Raw time-course data (for initial rate calculation)")
+            fig_plot, df_stats, df_progress = render_plot_and_table(sim, fig=st.session_state[f"fig_plot_{label}"])
+            st.markdown(
+                render_html_table(df_progress, font_size=24),
+                unsafe_allow_html=True
+            )
 
             time.sleep(0.05)

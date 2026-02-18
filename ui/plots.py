@@ -19,9 +19,14 @@ def render_plot_and_table(sim, fig=None):
     ax.set_title("Product vs Time")
     ax.grid(True)
 
+    # --- Create raw time-course dataframe (THIS IS NEW) ---
+    df_progress = pd.DataFrame({
+        "Time": sim.history_time_sampled,
+        "Product": sim.history_product_sampled
+    })
+
     # --- Compute statistics for sampled intervals ---
     if sim.history_product_sampled:
-        # Products formed in each interval (not normalized per step)
         interval_production = np.diff([0] + sim.history_product_sampled)
 
         stats = {
@@ -30,6 +35,7 @@ def render_plot_and_table(sim, fig=None):
             "Std Dev": np.std(interval_production),
             "Max": np.max(interval_production)
         }
+
         df_stats = pd.DataFrame(stats, index=["Products per 50 steps"])
     else:
         df_stats = pd.DataFrame(
@@ -37,4 +43,5 @@ def render_plot_and_table(sim, fig=None):
             index=["Products per 50 steps"]
         )
 
-    return fig, df_stats
+    # --- Return THREE objects now ---
+    return fig, df_stats, df_progress
